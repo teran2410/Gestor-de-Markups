@@ -33,14 +33,38 @@ CREATE TABLE IF NOT EXISTS markups (
     due_date TEXT NOT NULL,
     employee_id INTEGER NOT NULL,
     status_id INTEGER NOT NULL,
-
+    route_id INTEGER NOT NULL,
+    workCell_id INTEGER NOT NULL,
 
     FOREIGN KEY (employee_id) REFERENCES employees(id_employee) ON DELETE CASCADE,
-    FOREIGN KEY (status_id) REFERENCES Status(id) ON DELETE CASCADE
+    FOREIGN KEY (status_id) REFERENCES status(id) ON DELETE CASCADE,
+    FOREIGN KEY (route_id) REFERENCES routes(id) ON DELETE CASCADE,
+    FOREIGN KEY (workCell_id) REFERENCES workCells(id) ON DELETE CASCADE
 );
 
 -- Tabla de estados
-CREATE TABLE IF NOT EXISTS Status (
-    id INTEGER PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS status (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     status TEXT NOT NULL
+);
+
+-- Tabla de rutas
+CREATE TABLE IF NOT EXISTS routes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    route TEXT NOT NULL
+);
+
+-- Tabla de Celda
+CREATE TABLE IF NOT EXISTS workCells (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    coreteam_id INTEGER NOT NULL,
+
+    FOREIGN KEY (coreteam_id) REFERENCES coreTeams(id) ON DELETE CASCADE
+);
+
+-- Tabla de CoreTeam
+CREATE TABLE IF NOT EXISTS coreTeams (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL
 );
