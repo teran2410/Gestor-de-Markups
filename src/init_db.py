@@ -24,6 +24,17 @@ initial_statuses = [
     ("Late",)
 ]
 
+initial_routes = [
+    ("Actualizando",),
+    ("En firmas",),
+    ("Enviado a drafting",)
+]
+
+initial_coreteams = [
+    ("S1",)
+    ("S2",)
+]
+
 def initialize_database():
     # Conectar a la base de datos
     conn = sqlite3.connect(DB_PATH)
