@@ -36,25 +36,25 @@ initial_coreteams = [
 ]
 
 initial_cells = [
-    ("Bangkok", "1"),
-    ("Barcelona", "0"),
-    ("Berlin", "0"),
-    ("Frankfurt", "0"),
-    ("Londres", "0"),
-    ("Madrid 1", "1"),
-    ("Madrid 2", "1"),
-    ("Milan", "0"),
-    ("Munich", "0"),
-    ("Paris", "0"),
-    ("Pekin", "1"),
-    ("Praga", "0"),
-    ("Roma", "0"),
-    ("Seul", "1"),
-    ("Shangai 1", "1"),
-    ("Shangai 2", "1"),
-    ("Tokio", "0"),
-    ("Venecia", "0"),
-    ("Yakarta", "1")
+    ("Bangkok", 1),
+    ("Barcelona", 0),
+    ("Berlin", 0),
+    ("Frankfurt", 0),
+    ("Londres", 0),
+    ("Madrid 1", 1),
+    ("Madrid 2", 1),
+    ("Milan", 0),
+    ("Munich", 0),
+    ("Paris", 0),
+    ("Pekin", 1),
+    ("Praga", 0),
+    ("Roma", 0),
+    ("Seul", 1),
+    ("Shangai 1", 1),
+    ("Shangai 2", 1),
+    ("Tokio", 0),
+    ("Venecia", 0),
+    ("Yakarta", 1)
 ]
 
 def initialize_database():
@@ -103,6 +103,17 @@ def initialize_database():
     if cursor.fetchone()[0] == 0:
         cursor.executemany("INSERT INTO workCells (name, coreteam_id) VALUES (?, ?)", initial_cells)
         print("✔️ Celdas iniciales insertadas.")
+
+    # Imprimir tabla employees y markups para verificar los registros
+    cursor.execute("SELECT * FROM employees")
+    employees = cursor.fetchall()
+    print("👥 Empleados registrados:", employees
+        if employees else "Ningún empleado registrado.")
+    
+    cursor.execute("SELECT * FROM markups")
+    markups = cursor.fetchall()
+    print("📄 Markups registrados:", markups 
+        if markups else "Ningún markup registrado.")
 
     # Confirmar y cerrar
     conn.commit()

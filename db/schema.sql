@@ -32,8 +32,8 @@ CREATE TABLE IF NOT EXISTS markups (
     created_at TEXT NOT NULL,
     due_date TEXT NOT NULL,
     employee_id INTEGER NOT NULL,
-    status_id INTEGER NOT NULL,
-    route_id INTEGER NOT NULL,
+    status_id INTEGER,
+    route_id INTEGER,
     workCell_id INTEGER NOT NULL,
 
     FOREIGN KEY (employee_id) REFERENCES employees(id_employee) ON DELETE CASCADE,

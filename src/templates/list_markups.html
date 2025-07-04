@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Listado de Markups</title>
+</head>
+<body>
+    <h1>Todos los Markups Registrados</h1>
+    <a href="{{ url_for('dashboard') }}">← Volver al dashboard</a>
+    <br><br>
+
+    {% if markups %}
+        <table border="1" cellpadding="5">
+            <tr>
+                <th>ID</th>
+                <th>Número de Parte</th>
+                <th>Descripción</th>
+                <th>Revisión</th>
+                <th>Fecha de Inicio</th>
+                <th>Fecha Límite</th>
+                <th>Responsable</th>
+                <th>Estado</th>
+                <th>Ruta</th>
+                <th>Celda</th>
+            </tr>
+            {% for m in markups %}
+            <tr>
+                <td>{{ m["id"] }}</td>
+                <td>{{ m["part_number"] }}</td>
+                <td>{{ m["description"] }}</td>
+                <td>{{ m["revision"] }}</td>
+                <td>{{ m["created_at"] }}</td>
+                <td>{{ m["due_date"] }}</td>
+                <td>{{ m["employee_name"] }}</td>
+                <td>{{ m["status"] }}</td>
+                <td>{{ m["route"] }}</td>
+                <td>{{ m["workcell_name"] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No hay markups registrados.</p>
+    {% endif %}
+</body>
+</html>

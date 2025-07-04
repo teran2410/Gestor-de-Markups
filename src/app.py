@@ -5,7 +5,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from flask import Flask, render_template, request, redirect, session, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
-from db.queries import INSERT_EMPLOYEE, GET_ALL_ROLES, GET_ALL_AREAS, INSERT_MARKUP, GET_ALL_ROUTES, GET_ALL_STATUSES, GET_ALL_WORKCELLS
+from db.queries import INSERT_EMPLOYEE, GET_ALL_ROLES, GET_ALL_AREAS, INSERT_MARKUP, GET_ALL_ROUTES, GET_ALL_STATUSES, GET_ALL_WORKCELLS, GET_ALL_MARKUPS_WITH_DETAILS
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
@@ -112,46 +112,83 @@ def new_markup():
     conn.execute("PRAGMA foreign_keys = ON;")
     cursor = conn.cursor()
 
+    # GET: mostrar celdas
+    cursor.execute(GET_ALL_WORKCELLS)
+    workcells = cursor.fetchall()
+
     if request.method == "POST":
         part_number = request.form["part_number"]
         description = request.form["description"]
         revision = request.form["revision"]
         workCell_id = request.form["workCell_id"]
         employee_id = session["user_id"]
+        created_at_str = request.form["created_at"]
 
-        created_at = datetime.today().date()
-        # Calcular 7 días hábiles después
+        try:
+            created_at = datetime.strptime(created_at_str, "%Y-%m-%d").date()
+        except ValueError:
+            message = "Fecha inválida. Usa el formato correcto (YYYY-MM-DD)."
+            conn.close()
+            return render_template("new_markup.html",
+                                   workcells=workcells,
+                                   message=message)
+
+        # Calcular fecha de entrega (7 días hábiles)
         due_date = created_at
         added_days = 0
         while added_days < 7:
             due_date += timedelta(days=1)
-            if due_date.weekday() < 5:  # 0 = lunes, 4 = viernes
+            if due_date.weekday() < 5:
                 added_days += 1
 
+        # Obtener ID de status y route predeterminados
+        cursor.execute("SELECT id FROM status WHERE status = 'Pending'")
+        result = cursor.fetchone()
+        if not result:
+            message = "No se encontró el estado 'Pending'."
+            conn.close()
+            return render_template("new_markup.html", workcells=workcells, message=message)
+        status_id = result[0]
+
+        cursor.execute("SELECT id FROM routes WHERE route = 'Actualizando'")
+        result = cursor.fetchone()
+        if not result:
+            message = "No se encontró la ruta 'Actualizando'."
+            conn.close()
+            return render_template("new_markup.html", workcells=workcells, message=message)
+        route_id = result[0]
+
+        # Insertar markup
         cursor.execute(INSERT_MARKUP, (
             part_number, description, revision,
             created_at.isoformat(), due_date.isoformat(),
             employee_id, status_id, route_id, workCell_id
         ))
+
         conn.commit()
         conn.close()
         return redirect(url_for("dashboard"))
 
-    # GET: mostrar formulario
-    cursor.execute(GET_ALL_ROUTES)
-    routes = cursor.fetchall()
-    cursor.execute(GET_ALL_STATUSES)
-    statuses = cursor.fetchall()
-    cursor.execute(GET_ALL_WORKCELLS)
-    workcells = cursor.fetchall()
+    # Si GET o si hubo error
     conn.close()
-    print("Workcells:", workcells)
-
     return render_template("new_markup.html",
-                           routes=routes,
-                           statuses=statuses,
                            workcells=workcells,
                            message=message)
+
+@app.route("/markups")
+def list_markups():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row  # Para acceder a las columnas por nombre
+    cursor = conn.cursor()
+
+    cursor.execute(GET_ALL_MARKUPS_WITH_DETAILS)
+    markups = cursor.fetchall()
+
+    conn.close()
+    return render_template("list_markups.html", markups=markups)
 
 if __name__ == "__main__":
     app.run(debug=True)
