@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Markup</title>
+</head>
+<body>
+    <h1>Registrar nuevo Markup</h1>
+
+    {% if message %}
+        <p style="color: red;">{{ message }}</p>
+    {% endif %}
+
+    <form method="POST" action="/markups/new">
+        <label>Número de parte:</label><br>
+        <input type="text" name="part_number" required><br><br>
+
+        <label>Descripción del cambio:</label><br>
+        <textarea name="description" rows="3" required></textarea><br><br>
+
+        <label>Nueva revisión:</label><br>
+        <input type="text" name="revision" required><br><br>
+
+        <label>Celda de trabajo:</label><br>
+        <select name="workCell_id" required>
+            {% for cell in workcells %}
+                <option value="{{ cell[0] }}">{{ cell[1] }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <button type="submit">Guardar</button>
+    </form>
+</body>
+</html>

@@ -35,6 +35,28 @@ initial_coreteams = [
     ("S2",)
 ]
 
+initial_cells = [
+    ("Bangkok", "1"),
+    ("Barcelona", "0"),
+    ("Berlin", "0"),
+    ("Frankfurt", "0"),
+    ("Londres", "0"),
+    ("Madrid 1", "1"),
+    ("Madrid 2", "1"),
+    ("Milan", "0"),
+    ("Munich", "0"),
+    ("Paris", "0"),
+    ("Pekin", "1"),
+    ("Praga", "0"),
+    ("Roma", "0"),
+    ("Seul", "1"),
+    ("Shangai 1", "1"),
+    ("Shangai 2", "1"),
+    ("Tokio", "0"),
+    ("Venecia", "0"),
+    ("Yakarta", "1")
+]
+
 def initialize_database():
     # Conectar a la base de datos
     conn = sqlite3.connect(DB_PATH)
@@ -76,14 +98,11 @@ def initialize_database():
         cursor.executemany("INSERT INTO coreTeams (name) VALUES (?)", initial_coreteams)
         print("✔️ Equipos centrales iniciales insertados.")
 
-    # Crear query para ver los datos de los empleados (test)
-    cursor.execute("SELECT * FROM employees")
-    employees = cursor.fetchall()
-    print("Usuarios existentes en la base de datos:")
-    # imprimir los headers de la tabla
-    print("ID | Nombre | Apellido | Contraseña | Rol | Área")
-    for employee in employees:
-        print(employee)
+    # Insertar celdas si no existen
+    cursor.execute("SELECT COUNT(*) FROM workCells")
+    if cursor.fetchone()[0] == 0:
+        cursor.executemany("INSERT INTO workCells (name, coreteam_id) VALUES (?, ?)", initial_cells)
+        print("✔️ Celdas iniciales insertadas.")
 
     # Confirmar y cerrar
     conn.commit()
