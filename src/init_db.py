@@ -31,7 +31,7 @@ initial_routes = [
 ]
 
 initial_coreteams = [
-    ("S1",)
+    ("S1",),
     ("S2",)
 ]
 
@@ -57,6 +57,33 @@ def initialize_database():
     if cursor.fetchone()[0] == 0:
         cursor.executemany("INSERT INTO areas (acronym, area) VALUES (?, ?)", initial_areas)
         print("✔️ Áreas iniciales insertadas.")
+
+    # Insertar estados si no existen
+    cursor.execute("SELECT COUNT(*) FROM status")
+    if cursor.fetchone()[0] == 0:
+        cursor.executemany("INSERT INTO status (status) VALUES (?)", initial_statuses)
+        print("✔️ Estados iniciales insertados.")
+
+    # Insertar rutas si no existen
+    cursor.execute("SELECT COUNT(*) FROM routes")
+    if cursor.fetchone()[0] == 0:
+        cursor.executemany("INSERT INTO routes (route) VALUES (?)", initial_routes)
+        print("✔️ Rutas iniciales insertadas.")
+
+    # Insertar equipos centrales si no existen
+    cursor.execute("SELECT COUNT(*) FROM coreTeams")
+    if cursor.fetchone()[0] == 0:
+        cursor.executemany("INSERT INTO coreTeams (name) VALUES (?)", initial_coreteams)
+        print("✔️ Equipos centrales iniciales insertados.")
+
+    # Crear query para ver los datos de los empleados (test)
+    cursor.execute("SELECT * FROM employees")
+    employees = cursor.fetchall()
+    print("Usuarios existentes en la base de datos:")
+    # imprimir los headers de la tabla
+    print("ID | Nombre | Apellido | Contraseña | Rol | Área")
+    for employee in employees:
+        print(employee)
 
     # Confirmar y cerrar
     conn.commit()
