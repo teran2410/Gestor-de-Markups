@@ -104,17 +104,6 @@ def initialize_database():
         cursor.executemany("INSERT INTO workCells (name, coreteam_id) VALUES (?, ?)", initial_cells)
         print("✔️ Celdas iniciales insertadas.")
 
-    # Imprimir tabla employees y markups para verificar los registros
-    cursor.execute("SELECT * FROM employees")
-    employees = cursor.fetchall()
-    print("👥 Empleados registrados:", employees
-        if employees else "Ningún empleado registrado.")
-    
-    cursor.execute("SELECT * FROM markups")
-    markups = cursor.fetchall()
-    print("📄 Markups registrados:", markups 
-        if markups else "Ningún markup registrado.")
-
     # Confirmar y cerrar
     conn.commit()
     conn.close()

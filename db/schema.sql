@@ -68,3 +68,23 @@ CREATE TABLE IF NOT EXISTS coreTeams (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL
 );
+
+-- Vista de markups
+-- Esta vista combina la información de la tabla markups con las tablas relacionadas
+CREATE VIEW IF NOT EXISTS view_markups AS
+SELECT
+    m.id,
+    m.part_number,
+    m.description,
+    m.revision,
+    m.created_at,
+    m.due_date,
+    e.name || ' ' || e.lastname AS employee_name,
+    s.status,
+    r.route,
+    w.name AS workcell_name
+FROM markups m
+JOIN employees e ON m.employee_id = e.id_employee
+JOIN status s ON m.status_id = s.id
+JOIN routes r ON m.route_id = r.id
+JOIN workCells w ON m.workCell_id = w.id;

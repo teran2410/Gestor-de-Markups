@@ -92,24 +92,7 @@ GET_ALL_CORETEAMS = "SELECT * FROM coreTeams;"
 GET_CORETEAM_BY_ID = "SELECT * FROM coreTeams WHERE id = ?;"
 
 # ================================
-# Markups con información completa
+# Vista: Markups con detalles
 # ================================
-GET_ALL_MARKUPS_WITH_DETAILS = """
-SELECT
-    m.id,
-    m.part_number,
-    m.description,
-    m.revision,
-    m.created_at,
-    m.due_date,
-    e.name || ' ' || e.lastname AS employee_name,
-    s.status,
-    r.route,
-    w.name AS workcell_name
-FROM markups m
-JOIN employees e ON m.employee_id = e.id_employee
-JOIN status s ON m.status_id = s.id
-JOIN routes r ON m.route_id = r.id
-JOIN workCells w ON m.workCell_id = w.id
-ORDER BY m.created_at DESC;
-"""
+
+GET_ALL_MARKUPS_WITH_DETAILS = "SELECT * FROM view_markups ORDER BY created_at DESC;"
