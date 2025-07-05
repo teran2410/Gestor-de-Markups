@@ -2,28 +2,39 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 import sqlite3
-from db.queries import INSERT_EMPLOYEE, GET_ALL_ROLES, GET_ALL_AREAS, INSERT_MARKUP, GET_ALL_ROUTES, GET_ALL_STATUSES, GET_ALL_WORKCELLS, GET_ALL_MARKUPS_WITH_DETAILS
+from db.queries import (
+    INSERT_EMPLOYEE, GET_ALL_ROLES, GET_ALL_AREAS, INSERT_MARKUP,
+    GET_ALL_ROUTES, GET_ALL_STATUSES, GET_ALL_WORKCELLS
+)
 from datetime import datetime, timedelta
+from dateutil.parser import parse as parse_date
 
 app = Flask(__name__)
 app.secret_key = "O~27GpQv0q4^HbMtz_!rJ$Xe#LAvkTdn6pZfu&B3mcs@Y81W"
-
-# Ruta a la base de datos en la carpeta /instance
 DB_PATH = os.path.join("instance", "markups.db")
+
+# Función para filtrar y formatear fechas en plantillas
+@app.template_filter('datetimeformat')
+def datetimeformat(value, format='%Y-%m-%d'):
+    try:
+        if isinstance(value, str):
+            value = datetime.fromisoformat(value)
+        return value.strftime(format)
+    except Exception:
+        return ''
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
     conn = sqlite3.connect(DB_PATH)
-    conn.execute("PRAGMA foreign_keys = ON;")  # 👈 activa restricciones de claves foráneas
+    conn.execute("PRAGMA foreign_keys = ON;")
     cursor = conn.cursor()
 
     message = None
     error = None
 
-    # Obtener roles y áreas para el formulario
     cursor.execute(GET_ALL_ROLES)
     roles = cursor.fetchall()
 
@@ -39,10 +50,8 @@ def register():
             id_role = int(request.form["id_role"])
             id_area = int(request.form["id_area"])
 
-            # Generar hash de la contraseña
             password_hash = generate_password_hash(password)
 
-            # Insertar en la base de datos
             cursor.execute(INSERT_EMPLOYEE, (id_employee, name, lastname, password_hash, id_role, id_area))
             conn.commit()
             message = "Empleado registrado exitosamente."
@@ -65,10 +74,9 @@ def login():
         password = request.form["password"]
 
         conn = sqlite3.connect(DB_PATH)
-        conn.execute("PRAGMA foreign_keys = ON;")  # 👈 activa restricciones de claves foráneas
+        conn.execute("PRAGMA foreign_keys = ON;")
         cursor = conn.cursor()
 
-        # Buscar al empleado por ID
         cursor.execute("SELECT id_employee, name, lastname, password, id_role FROM employees WHERE id_employee = ?", (id_employee,))
         user = cursor.fetchone()
         conn.close()
@@ -76,7 +84,6 @@ def login():
         if user:
             user_id, name, lastname, hashed_password, role = user
             if check_password_hash(hashed_password, password):
-                # Iniciar sesión
                 session["user_id"] = user_id
                 session["name"] = name
                 session["role"] = role
@@ -102,6 +109,31 @@ def logout():
     session.clear()
     return redirect(url_for("login"))
 
+@app.route("/markups")
+def list_markups():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM view_markups")
+    markups = cursor.fetchall()
+
+    # Para los selects en los modales
+    cursor.execute("SELECT id_employee, name || ' ' || lastname FROM employees")
+    employees = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM status")
+    statuses = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM routes")
+    routes = cursor.fetchall()
+
+    cursor.execute("SELECT id, name FROM workCells")
+    workcells = cursor.fetchall()
+
+    conn.close()
+    return render_template("list_markups.html", markups=markups,
+                           employees=employees, statuses=statuses,
+                           routes=routes, workcells=workcells)
+
 @app.route("/markups/new", methods=["GET", "POST"])
 def new_markup():
     if "user_id" not in session:
@@ -112,7 +144,6 @@ def new_markup():
     conn.execute("PRAGMA foreign_keys = ON;")
     cursor = conn.cursor()
 
-    # GET: mostrar celdas
     cursor.execute(GET_ALL_WORKCELLS)
     workcells = cursor.fetchall()
 
@@ -122,18 +153,14 @@ def new_markup():
         revision = request.form["revision"]
         workCell_id = request.form["workCell_id"]
         employee_id = session["user_id"]
-        created_at_str = request.form["created_at"]
 
+        created_at_str = request.form["created_at"]
         try:
             created_at = datetime.strptime(created_at_str, "%Y-%m-%d").date()
         except ValueError:
             message = "Fecha inválida. Usa el formato correcto (YYYY-MM-DD)."
-            conn.close()
-            return render_template("new_markup.html",
-                                   workcells=workcells,
-                                   message=message)
+            return render_template("new_markup.html", workcells=workcells, message=message)
 
-        # Calcular fecha de entrega (7 días hábiles)
         due_date = created_at
         added_days = 0
         while added_days < 7:
@@ -141,24 +168,22 @@ def new_markup():
             if due_date.weekday() < 5:
                 added_days += 1
 
-        # Obtener ID de status y route predeterminados
         cursor.execute("SELECT id FROM status WHERE status = 'Pending'")
-        result = cursor.fetchone()
-        if not result:
+        status_id = cursor.fetchone()
+        if not status_id:
             message = "No se encontró el estado 'Pending'."
             conn.close()
             return render_template("new_markup.html", workcells=workcells, message=message)
-        status_id = result[0]
+        status_id = status_id[0]
 
         cursor.execute("SELECT id FROM routes WHERE route = 'Actualizando'")
-        result = cursor.fetchone()
-        if not result:
+        route_id = cursor.fetchone()
+        if not route_id:
             message = "No se encontró la ruta 'Actualizando'."
             conn.close()
             return render_template("new_markup.html", workcells=workcells, message=message)
-        route_id = result[0]
+        route_id = route_id[0]
 
-        # Insertar markup
         cursor.execute(INSERT_MARKUP, (
             part_number, description, revision,
             created_at.isoformat(), due_date.isoformat(),
@@ -167,28 +192,71 @@ def new_markup():
 
         conn.commit()
         conn.close()
-        return redirect(url_for("dashboard"))
+        flash("✅ Markup creado correctamente.", "success")
+        return redirect(url_for("list_markups"))
 
-    # Si GET o si hubo error
-    conn.close()
-    return render_template("new_markup.html",
-                           workcells=workcells,
-                           message=message)
+    return render_template("new_markup.html", workcells=workcells, message=message)
 
-@app.route("/markups")
-def list_markups():
-    if "user_id" not in session:
-        return redirect(url_for("login"))
-
+@app.route("/markups/edit/<int:id>", methods=["POST"])
+def edit_markup(id):
     conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row  # Para acceder a las columnas por nombre
+    conn.execute("PRAGMA foreign_keys = ON;")
     cursor = conn.cursor()
 
-    cursor.execute(GET_ALL_MARKUPS_WITH_DETAILS)
-    markups = cursor.fetchall()
+    part_number = request.form["part_number"]
+    description = request.form["description"]
+    revision = request.form["revision"]
+    created_at_str = request.form["created_at"]
+    employee_id = request.form["employee_id"]
+    status_id = request.form["status_id"]
+    route_id = request.form["route_id"]
+    workcell_id = request.form["workcell_id"]
 
+    # Calcular la nueva fecha límite (7 días hábiles después de created_at)
+    try:
+        created_at = parse_date(created_at_str).date()
+        due_date = created_at
+        added_days = 0
+        while added_days < 7:
+            due_date += timedelta(days=1)
+            if due_date.weekday() < 5:  # solo lunes a viernes
+                added_days += 1
+    except ValueError:
+        conn.close()
+        return "❌ Error en la fecha", 400
+
+    # Actualizar el registro
+    cursor.execute("""
+        UPDATE markups
+        SET part_number = ?, description = ?, revision = ?, created_at = ?, due_date = ?,
+            employee_id = ?, status_id = ?, route_id = ?, workCell_id = ?
+        WHERE id = ?
+    """, (
+        part_number, description, revision, created_at.isoformat(), due_date.isoformat(),
+        employee_id, status_id, route_id, workcell_id, id
+    ))
+
+    conn.commit()
     conn.close()
-    return render_template("list_markups.html", markups=markups)
+    return redirect(url_for("list_markups"))
+
+# Función para eliminar markup
+@app.route("/markups/delete/<int:id>", methods=["POST"])
+def delete_markup(id):
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("PRAGMA foreign_keys = ON;")
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("DELETE FROM markups WHERE id = ?", (id,))
+        conn.commit()
+        flash("✅ Markup eliminado correctamente.", "success")
+    except sqlite3.Error as e:
+        flash(f"❌ Error al eliminar el markup: {e}", "error")
+    finally:
+        conn.close()
+
+    return redirect(url_for("list_markups"))
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -96,3 +96,4 @@ GET_CORETEAM_BY_ID = "SELECT * FROM coreTeams WHERE id = ?;"
 # ================================
 
 GET_ALL_MARKUPS_WITH_DETAILS = "SELECT * FROM view_markups ORDER BY created_at DESC;"
+GET_MARKUP_DETAILS_BY_ID = "SELECT * FROM view_markups WHERE id = ?;"
