@@ -79,10 +79,17 @@
                   <td>{{ markup[9] }}</td>
                   <td class="text-center">
                     <div class="d-flex justify-content-center gap-2">
+                        <!-- Botón ver archivo -->
+                        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#viewModal{{ markup[0] }}" title="Ver archivo">
+                          <i class="bi bi-eye"></i>
+                        </button>
+
+                    <div class="d-flex justify-content-center gap-2">
                       <!-- Botón editar -->
                       <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ markup[0] }}" title="Editar">
                         <i class="bi bi-pencil"></i>
                       </button>
+
                       <!-- Botón eliminar -->
                       <form action="{{ url_for('delete_markup', id=markup[0]) }}" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este markup?')">
                         <button type="submit" class="btn btn-danger btn-sm" title="Eliminar">
@@ -156,6 +163,10 @@
                                 {% endfor %}
                               </select>
                             </div>
+                            <div class="mb-3">
+                                <label>Enlace al archivo Excel</label>
+                                <input type="url" name="file_url" class="form-control" value="{{ markup[10] or '' }}">
+                            </div>
                           </div>
                         </div>
                         <div class="modal-footer">
@@ -216,6 +227,7 @@
                 </div>
                 </div>
             </div>
+
             <tfoot>
                 <tr class="text-center">
                     <td colspan="10">Total de Markups: {{ markups|length }}</td>

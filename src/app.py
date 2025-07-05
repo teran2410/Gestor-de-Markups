@@ -212,6 +212,7 @@ def edit_markup(id):
     status_id = request.form["status_id"]
     route_id = request.form["route_id"]
     workcell_id = request.form["workcell_id"]
+    file_url = request.form.get("file_url")
 
     # Calcular la nueva fecha límite (7 días hábiles después de created_at)
     try:
@@ -230,11 +231,11 @@ def edit_markup(id):
     cursor.execute("""
         UPDATE markups
         SET part_number = ?, description = ?, revision = ?, created_at = ?, due_date = ?,
-            employee_id = ?, status_id = ?, route_id = ?, workCell_id = ?
+            employee_id = ?, status_id = ?, route_id = ?, workCell_id = ?, file_url = ?
         WHERE id = ?
     """, (
         part_number, description, revision, created_at.isoformat(), due_date.isoformat(),
-        employee_id, status_id, route_id, workcell_id, id
+        employee_id, status_id, route_id, workcell_id, file_url, id
     ))
 
     conn.commit()

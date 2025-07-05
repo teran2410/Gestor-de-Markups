@@ -79,10 +79,11 @@ SELECT
     m.revision,
     m.created_at,
     m.due_date,
-    e.name || ' ' || e.lastname AS employee_name,
+    e.name || ' ' || e.lastname AS employee,
     s.status,
     r.route,
-    w.name AS workcell_name
+    w.name AS workcell,
+    m.file_url
 FROM markups m
 JOIN employees e ON m.employee_id = e.id_employee
 JOIN status s ON m.status_id = s.id
