@@ -57,6 +57,27 @@ initial_cells = [
     ("Yakarta", 1)
 ]
 
+def add_file_url_column():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    try:
+        # Verificamos si ya existe la columna (no se puede hacer directamente en SQL en SQLite)
+        cursor.execute("PRAGMA table_info(markups);")
+        columns = [col[1] for col in cursor.fetchall()]
+        
+        if "file_url" not in columns:
+            cursor.execute("ALTER TABLE markups ADD COLUMN file_url TEXT;")
+            print("✅ Columna 'file_url' agregada exitosamente.")
+        else:
+            print("ℹ️ La columna 'file_url' ya existe.")
+
+        conn.commit()
+    except Exception as e:
+        print("❌ Error al agregar la columna:", e)
+    finally:
+        conn.close()
+
 def initialize_database():
     # Conectar a la base de datos
     conn = sqlite3.connect(DB_PATH)

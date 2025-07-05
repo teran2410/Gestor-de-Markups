@@ -100,6 +100,32 @@
                   </td>
                 </tr>
 
+                <!-- Modal para ver archivo -->
+                <div class="modal fade" id="viewModal{{ markup[0] }}" tabindex="-1" aria-labelledby="viewLabel{{ markup[0] }}" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="viewLabel{{ markup[0] }}">Archivo de Markup #{{ markup[0] }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                      </div>
+                      <div class="modal-body text-center">
+                        {% if markup[10] %}
+                          <p>Haz clic en el botón para abrir el archivo:</p>
+                          <a href="{{ markup[10] }}" target="_blank" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-up-right"></i> Ver archivo
+                          </a>
+                        {% else %}
+                          <p class="text-muted">No hay enlace disponible para este markup.</p>
+                        {% endif %}
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+
                 <!-- Modal de edición -->
                 <div class="modal fade" id="editModal{{ markup[0] }}" tabindex="-1" aria-labelledby="editLabel{{ markup[0] }}" aria-hidden="true">
                   <div class="modal-dialog modal-lg">

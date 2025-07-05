@@ -229,14 +229,15 @@ def edit_markup(id):
 
     # Actualizar el registro
     cursor.execute("""
-        UPDATE markups
-        SET part_number = ?, description = ?, revision = ?, created_at = ?, due_date = ?,
-            employee_id = ?, status_id = ?, route_id = ?, workCell_id = ?, file_url = ?
-        WHERE id = ?
+    UPDATE markups
+    SET part_number = ?, description = ?, revision = ?, created_at = ?, due_date = ?,
+        employee_id = ?, status_id = ?, route_id = ?, workCell_id = ?, file_url = ?
+    WHERE id = ?
     """, (
         part_number, description, revision, created_at.isoformat(), due_date.isoformat(),
         employee_id, status_id, route_id, workcell_id, file_url, id
     ))
+
 
     conn.commit()
     conn.close()

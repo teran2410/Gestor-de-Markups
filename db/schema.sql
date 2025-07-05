@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS markups (
     status_id INTEGER,
     route_id INTEGER,
     workCell_id INTEGER NOT NULL,
+    file_url TEXT, -- URL del archivo del markup
 
     FOREIGN KEY (employee_id) REFERENCES employees(id_employee) ON DELETE CASCADE,
     FOREIGN KEY (status_id) REFERENCES status(id) ON DELETE CASCADE,
