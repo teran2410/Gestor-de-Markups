@@ -111,6 +111,12 @@ def logout():
 
 @app.route("/markups")
 def list_markups():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    
+    name = session.get("name")
+    lastname = session.get("lastname")
+
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM view_markups")
@@ -132,7 +138,7 @@ def list_markups():
     conn.close()
     return render_template("list_markups.html", markups=markups,
                            employees=employees, statuses=statuses,
-                           routes=routes, workcells=workcells)
+                           routes=routes, workcells=workcells, name=name, lastname=lastname)
 
 @app.route("/markups/new", methods=["GET", "POST"])
 def new_markup():
