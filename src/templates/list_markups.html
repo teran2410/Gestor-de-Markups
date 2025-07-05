@@ -39,6 +39,13 @@
             </div>
             {% endif %}
         {% endwith %}
+
+        <div class="d-flex justify-content-end mb-3">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newMarkupModal">
+              <i class="bi bi-plus-circle"></i> Nuevo Markup
+            </button>
+          </div>
+
         <div class="table-responsive">
         <table class="table table-bordered shadow">
             <thead class="table-light text-center">
@@ -161,6 +168,59 @@
                 </div>
                 {% endfor %}
             </tbody>
+
+            <!-- Modal: Nuevo Markup -->
+            <div class="modal fade" id="newMarkupModal" tabindex="-1" aria-labelledby="newMarkupLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <form action="{{ url_for('new_markup') }}" method="POST">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="newMarkupLabel">Nuevo Markup</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                        <div class="col">
+                            <label>Número de parte</label>
+                            <input type="text" name="part_number" class="form-control" required>
+                        </div>
+                        <div class="col">
+                            <label>Revisión</label>
+                            <input type="text" name="revision" class="form-control" required>
+                        </div>
+                        </div>
+                        <div class="mb-3">
+                        <label>Descripción</label>
+                        <textarea name="description" class="form-control" required></textarea>
+                        </div>
+                        <div class="row mb-3">
+                        <div class="col">
+                            <label>Fecha de creación</label>
+                            <input type="date" name="created_at" class="form-control" required>
+                        </div>
+                        <div class="col">
+                            <label>Celda</label>
+                            <select name="workCell_id" class="form-select" required>
+                            {% for cell in workcells %}
+                            <option value="{{ cell[0] }}">{{ cell[1] }}</option>
+                            {% endfor %}
+                            </select>
+                        </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success">Crear</button>
+                    </div>
+                    </form>
+                </div>
+                </div>
+            </div>
+            <tfoot>
+                <tr class="text-center">
+                    <td colspan="10">Total de Markups: {{ markups|length }}</td>
+                </tr>
+            </tfoot>  
         </table>
         </div>
     </div>

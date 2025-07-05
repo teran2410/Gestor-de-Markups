@@ -140,68 +140,63 @@ def list_markups():
                            employees=employees, statuses=statuses,
                            routes=routes, workcells=workcells, name=name, lastname=lastname)
 
-@app.route("/markups/new", methods=["GET", "POST"])
+@app.route("/markups/new", methods=["POST"])
 def new_markup():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    message = None
     conn = sqlite3.connect(DB_PATH)
     conn.execute("PRAGMA foreign_keys = ON;")
     cursor = conn.cursor()
 
-    cursor.execute(GET_ALL_WORKCELLS)
-    workcells = cursor.fetchall()
+    part_number = request.form["part_number"]
+    description = request.form["description"]
+    revision = request.form["revision"]
+    workCell_id = request.form["workCell_id"]
+    employee_id = session["user_id"]
 
-    if request.method == "POST":
-        part_number = request.form["part_number"]
-        description = request.form["description"]
-        revision = request.form["revision"]
-        workCell_id = request.form["workCell_id"]
-        employee_id = session["user_id"]
+    created_at_str = request.form["created_at"]
+    try:
+        created_at = datetime.strptime(created_at_str, "%Y-%m-%d").date()
+    except ValueError:
+        flash("❌ Fecha inválida. Usa el formato correcto (YYYY-MM-DD).", "danger")
+        return redirect(url_for("list_markups"))
 
-        created_at_str = request.form["created_at"]
-        try:
-            created_at = datetime.strptime(created_at_str, "%Y-%m-%d").date()
-        except ValueError:
-            message = "Fecha inválida. Usa el formato correcto (YYYY-MM-DD)."
-            return render_template("new_markup.html", workcells=workcells, message=message)
+    # Calcular la fecha límite (7 días hábiles después de created_at)
+    due_date = created_at
+    added_days = 0
+    while added_days < 7:
+        due_date += timedelta(days=1)
+        if due_date.weekday() < 5:
+            added_days += 1
 
-        due_date = created_at
-        added_days = 0
-        while added_days < 7:
-            due_date += timedelta(days=1)
-            if due_date.weekday() < 5:
-                added_days += 1
-
+    # Obtener IDs de estado y ruta
+    try:
         cursor.execute("SELECT id FROM status WHERE status = 'Pending'")
-        status_id = cursor.fetchone()
-        if not status_id:
-            message = "No se encontró el estado 'Pending'."
-            conn.close()
-            return render_template("new_markup.html", workcells=workcells, message=message)
-        status_id = status_id[0]
+        status_id = cursor.fetchone()[0]
 
         cursor.execute("SELECT id FROM routes WHERE route = 'Actualizando'")
-        route_id = cursor.fetchone()
-        if not route_id:
-            message = "No se encontró la ruta 'Actualizando'."
-            conn.close()
-            return render_template("new_markup.html", workcells=workcells, message=message)
-        route_id = route_id[0]
+        route_id = cursor.fetchone()[0]
+    except:
+        flash("❌ No se encontró el estado 'Pending' o la ruta 'Actualizando'.", "danger")
+        conn.close()
+        return redirect(url_for("list_markups"))
 
+    # Insertar nuevo markup
+    try:
         cursor.execute(INSERT_MARKUP, (
             part_number, description, revision,
             created_at.isoformat(), due_date.isoformat(),
             employee_id, status_id, route_id, workCell_id
         ))
-
         conn.commit()
-        conn.close()
         flash("✅ Markup creado correctamente.", "success")
-        return redirect(url_for("list_markups"))
+    except sqlite3.Error as e:
+        flash(f"❌ Error al crear markup: {e}", "danger")
+    finally:
+        conn.close()
 
-    return render_template("new_markup.html", workcells=workcells, message=message)
+    return redirect(url_for("list_markups"))
 
 @app.route("/markups/edit/<int:id>", methods=["POST"])
 def edit_markup(id):
