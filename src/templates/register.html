@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Registrar nuevo empleado</h1>
+    
+    {% if message %}
+        <p style="color: green;">{{ message }}</p>
+    {% endif %}
+    
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST" action="/register">
+        <label for="id_employee">Número de empleado:</label><br>
+        <input type="number" id="id_employee" name="id_employee" required min="1" max="50000" pattern="{0-9}{5}"><br><br>
+
+        <label for="name">Nombre:</label><br>
+        <input type="text" id="name" name="name" required pattern="[A-Z][a-z]{0,15}" title="Primera letra mayúscula y máximo 16 letras en total."><br><br>
+
+        <label for="lastname">Apellido:</label><br>
+        <input type="text" id="lastname" name="lastname" required pattern="[A-Z][a-z]{0,15}" title="Primera letra mayúscula y máximo 16 letras en total."><br><br>
+
+        <label for="password">Contraseña:</label><br>
+        <input type="password" id="password" name="password" required pattern="(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}" title="Debe tener al menos 8 caracteres, una letra mayúscula y un carácter especial."><br><br>
+        
+        <label for="id_role">Rol:</label><br>
+        <select name="id_role" id="id_role" required>
+            <option value="" disabled selected>Seleccione un rol</option>
+            {% for role in roles %}
+                <option value="{{ role[0] }}">{{ role[1] }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <label for="id_area">Área:</label><br>
+        <select name="id_area" id="id_area" required>
+            {% for area in areas %}
+                <option value="{{ area[0] }}">{{ area[1] }} - {{ area[2] }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <button type="submit">Registrar</button>
+    </form>
+</body>
+</html>
