@@ -42,7 +42,7 @@
         {% endwith %}
 
         <div class="d-flex justify-content-end mb-3">
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newMarkupModal">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newMarkupModal" title="Agregar Nuevo Markup">
               <i class="bi bi-plus-circle"></i> Nuevo Markup
             </button>
           </div>
@@ -79,10 +79,10 @@
                   <td>{{ markup[9] }}</td>
                   <td class="text-center">
                     <div class="d-flex justify-content-center gap-2">
-                        <!-- Botón ver archivo -->
-                        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#viewModal{{ markup[0] }}" title="Ver archivo">
-                          <i class="bi bi-eye"></i>
-                        </button>
+                        <!-- Botón Ver Enlace -->
+                      <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#viewLinkModal{{ markup[0] }}" title="Ver Enlace">
+                        <i class="bi bi-eye"></i>
+                      </button>
 
                     <div class="d-flex justify-content-center gap-2">
                       <!-- Botón editar -->
@@ -100,31 +100,25 @@
                   </td>
                 </tr>
 
-                <!-- Modal para ver archivo -->
-                <div class="modal fade" id="viewModal{{ markup[0] }}" tabindex="-1" aria-labelledby="viewLabel{{ markup[0] }}" aria-hidden="true">
-                  <div class="modal-dialog modal-dialog-centered">
+               <!-- Modal Ver Enlace -->
+                <div class="modal fade" id="viewLinkModal{{ markup[0] }}" tabindex="-1" aria-labelledby="viewLinkModalLabel{{ markup[0] }}" aria-hidden="true">
+                  <div class="modal-dialog">
                     <div class="modal-content">
                       <div class="modal-header">
-                        <h5 class="modal-title" id="viewLabel{{ markup[0] }}">Archivo de Markup #{{ markup[0] }}</h5>
+                        <h5 class="modal-title" id="viewLinkModalLabel{{ markup[0] }}">Enlace del archivo</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                       </div>
-                      <div class="modal-body text-center">
+                      <div class="modal-body">
+                        <i class="bi bi-link"></i>
                         {% if markup[10] %}
-                          <p>Haz clic en el botón para abrir el archivo:</p>
-                          <a href="{{ markup[10] }}" target="_blank" class="btn btn-primary">
-                            <i class="bi bi-box-arrow-up-right"></i> Ver archivo
-                          </a>
+                          <a href="{{ markup[10] }}" target="_blank">{{ markup[10] }}</a>
                         {% else %}
-                          <p class="text-muted">No hay enlace disponible para este markup.</p>
+                          <p class="text-muted">No se ha asignado ningún enlace.</p>
                         {% endif %}
-                      </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                       </div>
                     </div>
                   </div>
                 </div>
-
 
                 <!-- Modal de edición -->
                 <div class="modal fade" id="editModal{{ markup[0] }}" tabindex="-1" aria-labelledby="editLabel{{ markup[0] }}" aria-hidden="true">
@@ -189,16 +183,17 @@
                                 {% endfor %}
                               </select>
                             </div>
+                            </div>
                             <div class="mb-3">
-                                <label>Enlace al archivo Excel</label>
-                                <input type="url" name="file_url" class="form-control" value="{{ markup[10] or '' }}">
+                              <label>Enlace al archivo Excel</label>
+                              <input type="url" name="file_url" class="form-control" value="{{ markup[10] or '' }}">
                             </div>
                           </div>
-                        </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                             <button type="submit" class="btn btn-success">Guardar cambios</button>
                         </div>
+                      </div>
                       </form>
                     </div>
                   </div>
@@ -265,10 +260,13 @@
     <script>
         document.querySelectorAll('.modal').forEach(modal => {
           modal.addEventListener('hidden.bs.modal', function () {
-            const form = modal.querySelector('form');
-            if (form) form.reset();
+            // Si queremos resetear formularios vacíos, podemos hacerlo solo en el modal de "nuevo"
+            if (modal.id === "newMarkupModal") {
+              const form = modal.querySelector('form');
+              if (form) form.reset();
+            }
           });
         });
-      </script>
+    </script>
 </body>
 </html>

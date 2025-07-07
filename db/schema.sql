@@ -70,20 +70,22 @@ CREATE TABLE IF NOT EXISTS coreTeams (
     name TEXT NOT NULL
 );
 
+
+DROP VIEW IF EXISTS view_markups;
 -- Vista de markups
 -- Esta vista combina la información de la tabla markups con las tablas relacionadas
-CREATE VIEW IF NOT EXISTS view_markups AS
-SELECT
+CREATE VIEW view_markups AS
+SELECT 
     m.id,
     m.part_number,
     m.description,
     m.revision,
     m.created_at,
     m.due_date,
-    e.name || ' ' || e.lastname AS employee,
+    e.name || ' ' || e.lastname AS employee_name,
     s.status,
     r.route,
-    w.name AS workcell,
+    w.name AS workcell_name,
     m.file_url
 FROM markups m
 JOIN employees e ON m.employee_id = e.id_employee
