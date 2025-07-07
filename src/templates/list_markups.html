@@ -126,33 +126,33 @@
                     <div class="modal-content">
                         <form action="{{ url_for('edit_markup', id=markup[0]) }}" method="POST">
                         <div class="modal-header">
-                          <h5 class="modal-title" id="editLabel{{ markup[0] }}">Editar Markup #{{ markup[0] }}</h5>
+                          <h5 class="modal-title" id="editLabel{{ markup[0] }}"><strong>Editar Markup #{{ markup[0] }}</strong></h5>
                           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                         </div>
                         <div class="modal-body">
                           <div class="row mb-3">
                             <div class="col">
-                              <label>Número de parte</label>
+                              <label><strong>Número de parte:</strong></label>
                               <input type="text" name="part_number" class="form-control" value="{{ markup[1] }}">
                             </div>
                             <div class="col">
-                              <label>Revisión</label>
+                              <label><strong>Revisión:</strong></label>
                               <input type="text" name="revision" class="form-control" value="{{ markup[3] }}">
                             </div>
                           </div>
                           <div class="mb-3">
-                            <label>Descripción</label>
+                            <label><strong>Descripción:</strong></label>
                             <textarea name="description" class="form-control">{{ markup[2] }}</textarea>
                           </div>
                           <div class="row mb-3">
                             <div class="col">
-                              <label>Fecha de creación</label>
+                              <label><strong>Fecha de creación:</strong></label>
                               <input type="date" name="created_at" class="form-control" value="{{ markup[4]|datetimeformat }}">
                             </div>
                           </div>
                           <div class="row mb-3">
                             <div class="col">
-                              <label>Responsable</label>
+                              <label><strong>Responsable:</strong></label>
                               <select name="employee_id" class="form-select">
                                 {% for emp in employees %}
                                 <option value="{{ emp[0] }}" {% if emp[1] == markup[6] %}selected{% endif %}>{{ emp[1] }}</option>
@@ -160,7 +160,7 @@
                               </select>
                             </div>
                             <div class="col">
-                              <label>Estatus</label>
+                              <label><strong>Estatus:</strong></label>
                               <select name="status_id" class="form-select">
                                 {% for status in statuses %}
                                 <option value="{{ status[0] }}" {% if status[1] == markup[7] %}selected{% endif %}>{{ status[1] }}</option>
@@ -168,7 +168,7 @@
                               </select>
                             </div>
                             <div class="col">
-                              <label>Ruta</label>
+                              <label><strong>Ruta:</strong></label>
                               <select name="route_id" class="form-select">
                                 {% for route in routes %}
                                 <option value="{{ route[0] }}" {% if route[1] == markup[8] %}selected{% endif %}>{{ route[1] }}</option>
@@ -176,7 +176,7 @@
                               </select>
                             </div>
                             <div class="col">
-                              <label>Celda</label>
+                              <label><strong>Celda:</strong></label>
                               <select name="workcell_id" class="form-select">
                                 {% for cell in workcells %}
                                 <option value="{{ cell[0] }}" {% if cell[1] == markup[9] %}selected{% endif %}>{{ cell[1] }}</option>
@@ -185,7 +185,7 @@
                             </div>
                             </div>
                             <div class="mb-3">
-                              <label>Enlace al archivo Excel</label>
+                              <label><strong>Enlace al archivo Excel:</strong></label>
                               <input type="url" name="file_url" class="form-control" value="{{ markup[10] or '' }}">
                             </div>
                           </div>

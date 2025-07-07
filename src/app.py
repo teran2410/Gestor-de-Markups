@@ -26,6 +26,54 @@ def datetimeformat(value, format='%Y-%m-%d'):
     except Exception:
         return ''
 
+# Función para calcular la fecha límite y el color de la tarjeta
+@app.template_filter("get_card_color")
+def get_card_color(markup):
+    fecha_limite = markup[5]
+    if isinstance(fecha_limite, str):
+        fecha_limite = datetime.strptime(fecha_limite, "%Y-%m-%d")
+    ahora = datetime.now()
+    delta = (fecha_limite - ahora).days
+
+    if delta > 4:
+        return "bg-success text-white"
+    elif delta >= 0:
+        return "bg-warning text-dark"
+    else:
+        return "bg-danger text-white"
+
+# Función para calcular la fecha límite y el color del footer de la tarjeta
+@app.template_filter("get_card_footer_color")
+def get_card_footer_color(markup):
+    fecha_limite = markup[5]
+    if isinstance(fecha_limite, str):
+        fecha_limite = datetime.strptime(fecha_limite, "%Y-%m-%d")
+    ahora = datetime.now()
+    delta = (fecha_limite - ahora).days
+
+    if delta > 4:
+        return "#69db7c"  # Verde
+    elif delta >= 0:
+        return "#ffd43b"  # Amarillo
+    else:
+        return "#ff8787"  # Rojo
+
+# Función para calcular el tiempo restante hasta la fecha límite
+@app.template_filter("calcular_tiempo")
+def calcular_tiempo(fecha_limite):
+    if isinstance(fecha_limite, str):
+        fecha_limite = datetime.strptime(fecha_limite, "%Y-%m-%d")
+    ahora = datetime.now()
+    diferencia = fecha_limite - ahora
+
+    if diferencia.total_seconds() < 0:
+        return "Vencido"
+
+    dias = diferencia.days
+    horas = diferencia.seconds // 3600
+    return f"{dias}d {horas}hrs"
+
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     conn = sqlite3.connect(DB_PATH)
@@ -115,7 +163,6 @@ def list_markups():
         return redirect(url_for("login"))
     
     name = session.get("name")
-    lastname = session.get("lastname")
 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -136,9 +183,15 @@ def list_markups():
     workcells = cursor.fetchall()
 
     conn.close()
-    return render_template("list_markups.html", markups=markups,
-                           employees=employees, statuses=statuses,
-                           routes=routes, workcells=workcells, name=name, lastname=lastname)
+
+    return render_template("list_markups_cards.html",
+                           markups=markups,
+                           employees=employees,
+                           statuses=statuses,
+                           routes=routes,
+                           workcells=workcells,
+                           name=name)
+
 
 @app.route("/markups/new", methods=["POST"])
 def new_markup():
@@ -155,9 +208,13 @@ def new_markup():
     workCell_id = request.form["workCell_id"]
     employee_id = session["user_id"]
 
+    
     created_at_str = request.form["created_at"]
     try:
         created_at = datetime.strptime(created_at_str, "%Y-%m-%d").date()
+        if created_at > datetime.now().date():
+            flash("❌ La fecha de creación debe ser posterior a la fecha actual.", "danger")
+            return redirect(url_for("list_markups"))
     except ValueError:
         flash("❌ Fecha inválida. Usa el formato correcto (YYYY-MM-DD).", "danger")
         return redirect(url_for("list_markups"))
