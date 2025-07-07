@@ -213,7 +213,7 @@ def new_markup():
     try:
         created_at = datetime.strptime(created_at_str, "%Y-%m-%d").date()
         if created_at > datetime.now().date():
-            flash("❌ La fecha de creación debe ser posterior a la fecha actual.", "danger")
+            flash("❌ La fecha de creación debe ser antes de la fecha actual o igual a la fecha actual.", "danger")
             return redirect(url_for("list_markups"))
     except ValueError:
         flash("❌ Fecha inválida. Usa el formato correcto (YYYY-MM-DD).", "danger")

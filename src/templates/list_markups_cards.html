@@ -20,7 +20,7 @@
 </head>
 <body>
 <div class="container my-4">
-  <h1 class="text-center mb-4">¡Bienvenid@, {{name}}!</h1>
+  <h2 class="text-center mb-4">¡Bienvenid@, {{name}}!</h2>
 
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -32,7 +32,6 @@
       {% endfor %}
     {% endif %}
   {% endwith %}
-
 
   <div class="d-flex justify-content-end mb-4">
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newMarkupModal">
@@ -46,158 +45,202 @@
       <div class="card {{ markup|get_card_color }} clickable-card" data-bs-toggle="modal" data-bs-target="#detailsModal{{ markup[0] }}">
         <div class="card-body">
           <h5 class="card-title">#{{ markup[0] }} - {{ markup[1] }}</h5>
-          <p class="card-text">{{ markup[2][:60] }}...</p>
           <p><strong>Responsable:</strong> {{ markup[6] }}</p>
           <p><strong>Fecha Límite:</strong> {{ markup[5]|datetimeformat }}</p>
           <p><strong>Tiempo restante:</strong> {{ markup[5]|calcular_tiempo }}</p>
         </div>
-        <div class="card-footer text-end" style="background-color: {{ markup|get_card_footer_color }};">
-            <form action="{{ url_for('delete_markup', id=markup[0]) }}" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este markup?')" class="d-inline-block">
+        <div class="card-footer d-flex justify-content-between align-items-center" style="background-color: {{ markup|get_card_footer_color }};">
+          <form action="{{ url_for('delete_markup', id=markup[0]) }}" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar este markup?')" class="d-inline-block">
             <button type="submit" class="btn btn-danger btn-sm" onclick="event.stopPropagation();">
               <i class="bi bi-trash" title="Eliminar"></i>
             </button>
           </form>
+          <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ markup[0] }}" onclick="event.stopPropagation();">
+            <i class="bi bi-pencil" title="Editar"></i>
+          </button>
         </div>
       </div>
     </div>
-  
-          <!-- Modal para mostrar más detalles y editar -->
-      <div class="modal fade" id="detailsModal{{ markup[0] }}" tabindex="-1" aria-labelledby="detailsModalLabel{{ markup[0] }}" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-          <div class="modal-content">
-            <form action="{{ url_for('edit_markup', id=markup[0]) }}" method="POST">
-              <div class="modal-header">
-                <h5 class="modal-title" id="detailsModalLabel{{ markup[0] }}">Editar Markup #{{ markup[0] }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-              </div>
-              <div class="modal-body">
-                <div class="row mb-3">
-                  <div class="col">
-                    <label>Número de parte</label>
-                    <input type="text" name="part_number" class="form-control" value="{{ markup[1] }}" required>
-                  </div>
-                  <div class="col">
-                    <label>Revisión</label>
-                    <input type="text" name="revision" class="form-control" value="{{ markup[3] }}" required>
-                  </div>
-                </div>
 
-                <div class="mb-3">
-                  <label>Descripción</label>
-                  <textarea name="description" class="form-control" required>{{ markup[2] }}</textarea>
-                </div>
-
-                <div class="row mb-3">
-                  <div class="col">
-                    <label>Fecha de creación</label>
-                    <input type="date" name="created_at" class="form-control" value="{{ markup[4]|datetimeformat }}" required>
-                  </div>
-                  <div class="col">
-                    <label>Celda</label>
-                    <select name="workcell_id" class="form-select" required>
-                      {% for cell in workcells %}
-                      <option value="{{ cell[0] }}" {% if cell[1] == markup[9] %}selected{% endif %}>{{ cell[1] }}</option>
-                      {% endfor %}
-                    </select>
-                  </div>
-                </div>
-
-                <div class="row mb-3">
-                  <div class="col">
-                    <label>Empleado</label>
-                    <select name="employee_id" class="form-select" required>
-                      {% for emp in employees %}
-                      <option value="{{ emp[0] }}" {% if emp[1] == markup[6] %}selected{% endif %}>{{ emp[1] }}</option>
-                      {% endfor %}
-                    </select>
-                  </div>
-                  <div class="col">
-                    <label>Estatus</label>
-                    <select name="status_id" class="form-select" required>
-                      {% for stat in statuses %}
-                      <option value="{{ stat[0] }}" {% if stat[1] == markup[7] %}selected{% endif %}>{{ stat[1] }}</option>
-                      {% endfor %}
-                    </select>
-                  </div>
-                  <div class="col">
-                    <label>Ruta</label>
-                    <select name="route_id" class="form-select" required>
-                      {% for route in routes %}
-                      <option value="{{ route[0] }}" {% if route[1] == markup[8] %}selected{% endif %}>{{ route[1] }}</option>
-                      {% endfor %}
-                    </select>
-                  </div>
-                </div>
-
-                <div class="mb-3">
-                  <label class="text-end">Enlace al archivo</label>
-                  <input type="text" name="file_url" class="form-control" value="{{ markup[10] }}">
-                </div>
-
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="submit" class="btn btn-primary">Guardar cambios</button>
-              </div>
-            </form>
+    <!-- Modal para mostrar más detalles -->
+    <div class="modal fade" id="detailsModal{{ markup[0] }}" tabindex="-1" aria-labelledby="detailsModalLabel{{ markup[0] }}" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="detailsModalLabel{{ markup[0] }}">Detalles del Markup #{{ markup[0] }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item"><strong>Número de parte:</strong> {{ markup[1] }}</li>
+              <li class="list-group-item"><strong>Descripción:</strong> {{ markup[2] }}</li>
+              <li class="list-group-item"><strong>Revisión:</strong> {{ markup[3] }}</li>
+              <li class="list-group-item"><strong>Fecha de creación:</strong> {{ markup[4]|datetimeformat }}</li>
+              <li class="list-group-item"><strong>Fecha límite:</strong> {{ markup[5]|datetimeformat }}</li>
+              <li class="list-group-item"><strong>Empleado:</strong> {{ markup[6] }}</li>
+              <li class="list-group-item"><strong>Estatus:</strong> {{ markup[7] }}</li>
+              <li class="list-group-item"><strong>Ruta:</strong> {{ markup[8] }}</li>
+              <li class="list-group-item"><strong>Celda:</strong> {{ markup[9] }}</li>
+              <li class="list-group-item"><strong>Enlace al archivo:</strong>
+                {% if markup[10] %}
+                  <a href="{{ markup[10] }}" target="_blank">{{ markup[10] }}</a>
+                {% else %}
+                  <span class="text-muted">No disponible</span>
+                {% endif %}
+              </li>
+            </ul>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Modal para editar Markup -->
+    <div class="modal fade" id="editModal{{ markup[0] }}" tabindex="-1" aria-labelledby="editModalLabel{{ markup[0] }}" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <form action="{{ url_for('edit_markup', id=markup[0]) }}" method="POST">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editModalLabel{{ markup[0] }}">Editar Markup #{{ markup[0] }}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row mb-3">
+                <div class="col">
+                  <label class="text-end">Número de parte</label>
+                  <input type="text" name="part_number" class="form-control" value="{{ markup[1] }}" required>
+                </div>
+                <div class="col">
+                  <label>Revisión</label>
+                  <input type="text" name="revision" class="form-control" value="{{ markup[3] }}" required>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label>Descripción</label>
+                <textarea name="description" class="form-control" required>{{ markup[2] }}</textarea>
+              </div>
+              <div class="row mb-3">
+                <div class="col">
+                  <label>Fecha de creación</label>
+                  <input type="date" name="created_at" class="form-control" value="{{ markup[4]|datetimeformat }}" required>
+                </div>
+                <div class="col">
+                  <label>Celda</label>
+                  <select name="workcell_id" class="form-select" required>
+                    {% for cell in workcells %}
+                    <option value="{{ cell[0] }}" {% if cell[1] == markup[9] %}selected{% endif %}>{{ cell[1] }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col">
+                  <label>Responsable</label>
+                  <select name="employee_id" class="form-select">
+                    {% for emp in employees %}
+                    <option value="{{ emp[0] }}" {% if emp[1] == markup[6] %}selected{% endif %}>{{ emp[1] }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col">
+                  <label>Estatus</label>
+                  <select name="status_id" class="form-select">
+                    {% for status in statuses %}
+                    <option value="{{ status[0] }}" {% if status[1] == markup[7] %}selected{% endif %}>{{ status[1] }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col">
+                  <label>Ruta</label>
+                  <select name="route_id" class="form-select">
+                    {% for route in routes %}
+                    <option value="{{ route[0] }}" {% if route[1] == markup[8] %}selected{% endif %}>{{ route[1] }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label>Enlace al archivo</label>
+                <input type="url" name="file_url" class="form-control" value="{{ markup[10] }}">
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              <button type="submit" class="btn btn-success">Guardar cambios</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
     {% endfor %}
-  </div>  
+  </div>
 </div>
-      <!-- Modal: Nuevo Markup -->
-      <div class="modal fade" id="newMarkupModal" tabindex="-1" aria-labelledby="newMarkupLabel" aria-hidden="true">
-          <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-              <form action="{{ url_for('new_markup') }}" method="POST">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="newMarkupLabel">Nuevo Markup</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+
+<!-- Modal: Nuevo Markup -->
+<div class="modal fade" id="newMarkupModal" tabindex="-1" aria-labelledby="newMarkupLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form action="{{ url_for('new_markup') }}" method="POST">
+        <div class="modal-header">
+          <h5 class="modal-title" id="newMarkupLabel">Nuevo Markup</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show text-center" role="alert">
+                  {{ message }}
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
                 </div>
-                <div class="modal-body">
-                  <div class="row mb-3">
-                    <div class="col">
-                      <label>Número de parte</label>
-                      <input type="text" name="part_number" class="form-control" required>
-                    </div>
-                    <div class="col">
-                      <label>Revisión</label>
-                      <input type="text" name="revision" class="form-control" required/>
-                    </div>
-                  </div>
-                  <div class="mb-3">
-                    <label>Descripción</label>
-                    <textarea name="description" class="form-control" required></textarea>
-                  </div>
-                  <div class="row mb-3">
-                    <div class="col">
-                      <label>Fecha de creación</label>
-                      <input type="date" name="created_at" class="form-control" required>
-                    </div>
-                    <div class="col">
-                      <label>Celda</label>
-                      <select name="workCell_id" class="form-select" required>
-                        {% for cell in workcells %}
-                        <option value="{{ cell[0] }}">{{ cell[1] }}</option>
-                        {% endfor %}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                  <button type="submit" class="btn btn-success">Crear</button>
-                </div>
-              </form>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+          <div class="row mb-3">
+            <div class="col">
+              <label>Número de parte</label>
+              <input type="text" name="part_number" class="form-control" required>
+            </div>
+            <div class="col">
+              <label>Revisión</label>
+              <input type="text" name="revision" class="form-control" required/>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label>Descripción</label>
+            <textarea name="description" class="form-control" required></textarea>
+          </div>
+          <div class="row mb-3">
+            <div class="col">
+              <label>Fecha de creación</label>
+              <input type="date" name="created_at" class="form-control" required>
+            </div>
+            <div class="col">
+              <label>Celda</label>
+              <select name="workCell_id" class="form-select" required>
+                {% for cell in workcells %}
+                <option value="{{ cell[0] }}">{{ cell[1] }}</option>
+                {% endfor %}
+              </select>
             </div>
           </div>
         </div>
-  
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success">Crear</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <script>
-    document.querySelectorAll('.clickable-card').forEach(card => {
-      card.style.cursor = "pointer";
-    });
-  </script>  
+  document.querySelectorAll('.clickable-card').forEach(card => {
+    card.style.cursor = "pointer";
+  });
+</script>
 </body>
 </html>
